@@ -1,1 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyGame — Profil Joueur</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black:#07070a; --dark:#0d0d12; --surface:#13131a; --surface2:#1a1a24;
+      --border:#ffffff0f; --border2:#ffffff18;
+      --red:#e03030; --bordeaux:#7a0f1e;
+      --white:#f2f2f5; --muted:#6e6e80; --muted2:#9898a8;
+    }
+    body { background:var(--black); color:var(--white); font-family:'Inter',sans-serif; font-size:15px; line-height:1.6; min-height:100vh; overflow-x:hidden; }
 
+    .neon-bg { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+    .orb { position:absolute; border-radius:50%; filter:blur(90px); }
+    .orb1 { width:600px; height:380px; top:-100px; left:-60px; background:radial-gradient(ellipse,rgba(180,15,30,.18) 0%,transparent 70%); }
+    .orb2 { width:400px; height:280px; bottom:15%; right:-80px; background:radial-gradient(ellipse,rgba(122,15,30,.13) 0%,transparent 70%); }
+    .grid-overlay { position:fixed; inset:0; pointer-events:none; z-index:0; background-image:linear-gradient(rgba(255,255,255,.016) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.016) 1px,transparent 1px); background-size:50px 50px; }
+
+    nav { position:fixed; top:0; left:0; right:0; z-index:200; display:flex; align-items:center; justify-content:space-between; padding:0 5%; height:60px; background:rgba(7,7,10,.75); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); }
+    .logo { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.45rem; letter-spacing:.1em; text-transform:uppercase; }
+    .logo em { font-style:normal; color:var(--red); }
+    .nav-links { display:flex; gap:2.5rem; list-style:none; }
+    .nav-links a { color:var(--muted); text-decoration:none; font-size:.78rem; font-weight:500; letter-spacing:.07em; text-transform:uppercase; transition:color .2s; }
+    .nav-links a:hover { color:var(--white); }
+    .nav-cta { background:transparent; border:1px solid var(--red); color:var(--red); border-radius:3px; padding:.38rem 1.1rem; font-size:.78rem; font-weight:600; letter-spacing:.08em; text-transform:uppercase; cursor:pointer; transition:background .2s,color .2s; }
+    .nav-cta:hover { background:var(--red); color:#fff; }
+
+    /* BANNER */
+    .banner { margin-top:60px; height:180px; background:linear-gradient(135deg,#160307 0%,#220510 50%,#0d0d12 100%); position:relative; overflow:hidden; }
+    .banner::after { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(224,48,48,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(224,48,48,.05) 1px,transparent 1px); background-size:40px 40px; }
+    .banner-glow { position:absolute; top:-60px; left:50%; transform:translateX(-50%); width:500px; height:200px; background:radial-gradient(ellipse,rgba(180,15,30,.25) 0%,transparent 70%); filter:blur(20px); }
+
+    /* PROFILE HEADER */
+    .profile-wrap { max-width:900px; margin:0 auto; padding:0 2rem; position:relative; z-index:1; }
+    .avatar-ring {
+      position:absolute; top:-52px;
+      width:96px; height:96px; border-radius:50%;
+      border:2px solid var(--red);
+      background:var(--surface);
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 0 24px rgba(224,48,48,.35), 0 0 50px rgba(122,15,30,.2);
+    }
+    .avatar-ring svg { width:38px; height:38px; stroke:var(--red); fill:none; stroke-width:1.2; stroke-linecap:round; stroke-linejoin:round; }
+    .profile-top { padding-top:62px; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+    .profile-name h1 { font-family:'Barlow Condensed',sans-serif; font-size:2rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; }
+    .profile-name p { color:var(--muted); font-size:.78rem; margin-top:.2rem; letter-spacing:.04em; }
+    .profile-btns { display:flex; gap:.6rem; }
+    .btn-p { background:var(--red); color:#fff; border:none; border-radius:3px; padding:.5rem 1.3rem; font-size:.8rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; transition:box-shadow .2s; }
+    .btn-p:hover { box-shadow:0 0 18px rgba(224,48,48,.4); }
+    .btn-g { background:rgba(255,255,255,.03); border:1px solid var(--border2); color:var(--muted2); border-radius:3px; padding:.5rem 1.3rem; font-size:.8rem; font-weight:500; letter-spacing:.05em; text-transform:uppercase; cursor:pointer; transition:color .2s,border-color .2s; }
+    .btn-g:hover { color:var(--white); border-color:rgba(255,255,255,.28); }
+
+    /* MAIN */
+    .main { max-width:900px; margin:2rem auto; padding:0 2rem 5rem; display:grid; grid-template-columns:260px 1fr; gap:1.2rem; position:relative; z-index:1; }
+
+    .card { background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:1.2rem; }
+    .card-label { font-size:.65rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin-bottom:.9rem; display:flex; align-items:center; gap:.5rem; }
+    .card-label::after { content:''; flex:1; height:1px; background:var(--border2); }
+
+    .bio-text { font-size:.82rem; color:var(--muted2); line-height:1.75; font-weight:300; }
+
+    .stats-g { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+    .stat-b { background:var(--dark); border:1px solid var(--border); border-radius:5px; padding:.75rem; text-align:center; }
+    .stat-b .n { font-family:'Barlow Condensed',sans-serif; font-size:1.45rem; font-weight:700; color:var(--white); }
+    .stat-b .l { font-size:.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin-top:.15rem; }
+
+    .game-row { display:flex; align-items:center; justify-content:space-between; padding:.55rem 0; border-bottom:1px solid var(--border); }
+    .game-row:last-child { border-bottom:none; }
+    .game-left { display:flex; align-items:center; gap:.65rem; }
+    .game-dot { width:28px; height:28px; border-radius:4px; background:rgba(122,15,30,.2); border:1px solid var(--bordeaux); display:flex; align-items:center; justify-content:center; }
+    .game-dot svg { width:13px; height:13px; stroke:var(--red); fill:none; stroke-width:1.5; stroke-linecap:round; }
+    .game-name-t { font-size:.85rem; font-weight:600; }
+    .game-role-t { font-size:.7rem; color:var(--muted); }
+    .rank-t { font-size:.68rem; font-weight:600; color:var(--white); background:rgba(255,255,255,.06); border:1px solid var(--border2); padding:.15rem .5rem; border-radius:2px; letter-spacing:.05em; text-transform:uppercase; }
+
+    .social-row { display:flex; align-items:center; gap:.6rem; font-size:.82rem; color:var(--muted2); padding:.3rem 0; }
+    .social-row svg { width:14px; height:14px; stroke:var(--muted); fill:none; stroke-width:1.5; stroke-linecap:round; flex-shrink:0; }
+
+    /* ESPORT BANNER */
+    .esport-bar {
+      background:linear-gradient(135deg,rgba(122,15,30,.2),rgba(19,19,26,.8));
+      border:1px solid var(--bordeaux); border-radius:6px; padding:1rem 1.2rem;
+      display:flex; align-items:center; gap:1rem;
+      box-shadow:0 0 20px rgba(122,15,30,.15);
+    }
+    .esport-icon { width:40px; height:40px; border-radius:50%; border:1px solid var(--bordeaux); background:rgba(122,15,30,.25); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 0 12px rgba(122,15,30,.3); }
+    .esport-icon svg { width:18px; height:18px; stroke:var(--red); fill:none; stroke-width:1.5; stroke-linecap:round; }
+    .esport-info h3 { font-family:'Barlow Condensed',sans-serif; font-size:1rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
+    .esport-info p { font-size:.78rem; color:var(--muted2); margin-top:.15rem; }
+    .esport-pill { margin-top:.5rem; display:inline-flex; align-items:center; gap:.3rem; background:rgba(224,48,48,.12); border:1px solid rgba(224,48,48,.25); color:var(--red); font-size:.68rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:.2rem .65rem; border-radius:2px; }
+
+    /* TABS */
+    .tabs { display:flex; gap:.3rem; border-bottom:1px solid var(--border); }
+    .tab { font-family:'Barlow Condensed',sans-serif; font-size:.9rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; background:none; border:none; color:var(--muted); padding:.55rem 1rem; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .2s,border-color .2s; }
+    .tab.active { color:var(--white); border-bottom-color:var(--red); }
+    .tab:hover { color:var(--white); }
+
+    /* CLIPS */
+    .clips-g { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:.8rem; }
+    .clip-c { background:var(--surface); border:1px solid var(--border); border-radius:6px; overflow:hidden; cursor:pointer; transition:transform .2s,border-color .2s; }
+    .clip-c:hover { transform:translateY(-3px); border-color:var(--bordeaux); }
+    .clip-thumb { height:100px; background:linear-gradient(135deg,#160307,#200510); display:flex; align-items:center; justify-content:center; position:relative; }
+    .clip-thumb svg { width:22px; height:22px; stroke:rgba(255,255,255,.2); fill:none; stroke-width:1.5; }
+    .play-btn { position:absolute; width:32px; height:32px; border-radius:50%; background:rgba(224,48,48,.8); display:flex; align-items:center; justify-content:center; box-shadow:0 0 14px rgba(224,48,48,.5); }
+    .play-btn svg { width:12px; height:12px; stroke:#fff; fill:#fff; stroke-width:1.5; margin-left:2px; }
+    .clip-info { padding:.65rem; }
+    .clip-title { font-size:.82rem; font-weight:600; }
+    .clip-meta { font-size:.7rem; color:var(--muted); margin-top:.15rem; }
+
+    .content-col { display:flex; flex-direction:column; gap:.9rem; }
+    .sidebar { display:flex; flex-direction:column; gap:.9rem; }
+
+    @media(max-width:700px){ .main{grid-template-columns:1fr;} .nav-links{display:none;} }
+  </style>
+</head>
+<body>
+
+<div class="neon-bg"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+<div class="grid-overlay"></div>
+
+<nav>
+  <div class="logo">MY<em>GAME</em></div>
+  <ul class="nav-links">
+    <li><a href="mygame.html">Accueil</a></li>
+    <li><a href="recherche.html">Trouver un mate</a></li>
+  </ul>
+  <button class="nav-cta">Mon profil</button>
+</nav>
+
+<div class="banner"><div class="banner-glow"></div></div>
+
+<div class="profile-wrap">
+  <div class="avatar-ring">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  </div>
+  <div class="profile-top">
+    <div class="profile-name">
+      <h1>ShadowX</h1>
+      <p>Membre depuis juin 2025 &nbsp;&middot;&nbsp; Paris, France</p>
+    </div>
+    <div class="profile-btns">
+      <button class="btn-p">+ Inviter</button>
+      <button class="btn-g">Message</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <aside class="sidebar">
+    <div class="card">
+      <div class="card-label">À propos</div>
+      <p class="bio-text">Joueur compétitif depuis 8 ans. Je cherche des teammates sérieux pour ranked. Pas de toxicité, que du skill.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Stats</div>
+      <div class="stats-g">
+        <div class="stat-b"><div class="n">247h</div><div class="l">Temps de jeu</div></div>
+        <div class="stat-b"><div class="n">68%</div><div class="l">Win rate</div></div>
+        <div class="stat-b"><div class="n">12</div><div class="l">Mates trouvés</div></div>
+        <div class="stat-b"><div class="n">34</div><div class="l">Clips postés</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Jeux &amp; Ranks</div>
+      <div class="game-row">
+        <div class="game-left">
+          <div class="game-dot"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></div>
+          <div><div class="game-name-t">Valorant</div><div class="game-role-t">Duelliste</div></div>
+        </div>
+        <div class="rank-t">Diamond II</div>
+      </div>
+      <div class="game-row">
+        <div class="game-left">
+          <div class="game-dot"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></div>
+          <div><div class="game-name-t">CS2</div><div class="game-role-t">Rifler</div></div>
+        </div>
+        <div class="rank-t">Supreme</div>
+      </div>
+      <div class="game-row">
+        <div class="game-left">
+          <div class="game-dot"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></div>
+          <div><div class="game-name-t">Fortnite</div><div class="game-role-t">Solo / Duo</div></div>
+        </div>
+        <div class="rank-t">Top 500</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Réseaux</div>
+      <div class="social-row"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> Discord : ShadowX#1337</div>
+      <div class="social-row"><svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 00-1.95 1.96A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.54C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.96A29 29 0 0023 12a29 29 0 00-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="currentColor" stroke="none"/></svg> Twitch : shadowx_live</div>
+      <div class="social-row"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg> Instagram : @shadowx.gg</div>
+    </div>
+  </aside>
+
+  <div class="content-col">
+    <div class="esport-bar">
+      <div class="esport-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <div class="esport-info">
+        <h3>Profil Esport activé</h3>
+        <p>Ce joueur cherche activement une équipe ou une organisation esport.</p>
+        <div class="esport-pill">Disponible pour recrutement</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active">Clips</button>
+      <button class="tab">Stats détaillées</button>
+      <button class="tab">Mates</button>
+    </div>
+
+    <div class="clips-g">
+      <div class="clip-c"><div class="clip-thumb"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="#fff" stroke="none"/></svg></div></div><div class="clip-info"><div class="clip-title">Ace en pistol round</div><div class="clip-meta">Valorant &middot; 2.4K vues</div></div></div>
+      <div class="clip-c"><div class="clip-thumb"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="#fff" stroke="none"/></svg></div></div><div class="clip-info"><div class="clip-title">Clutch 1v4 ranked</div><div class="clip-meta">CS2 &middot; 1.8K vues</div></div></div>
+      <div class="clip-c"><div class="clip-thumb"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="#fff" stroke="none"/></svg></div></div><div class="clip-info"><div class="clip-title">30 kills no death</div><div class="clip-meta">Fortnite &middot; 3.1K vues</div></div></div>
+      <div class="clip-c"><div class="clip-thumb"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="#fff" stroke="none"/></svg></div></div><div class="clip-info"><div class="clip-title">Snipe longue distance</div><div class="clip-meta">Valorant &middot; 892 vues</div></div></div>
+      <div class="clip-c"><div class="clip-thumb"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="#fff" stroke="none"/></svg></div></div><div class="clip-info"><div class="clip-title">Retake parfait</div><div class="clip-meta">CS2 &middot; 1.2K vues</div></div></div>
+      <div class="clip-c"><div class="clip-thumb"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><div class="play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="#fff" stroke="none"/></svg></div></div><div class="clip-info"><div class="clip-title">MVP finals tournoi</div><div class="clip-meta">Valorant &middot; 5.6K vues</div></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
